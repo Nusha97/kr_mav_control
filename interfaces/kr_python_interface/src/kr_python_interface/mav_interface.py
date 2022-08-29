@@ -7,7 +7,7 @@ import actionlib
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry, Path
-from kr_tracker_msgs.msg import TrajectoryTrackerAction, TrajectoryTrackerGoal, CircleTrackerAction, CircleTrackerGoal, LineTrackerAction, LineTrackerGoal
+from kr_tracker_msgs.msg import TrajectoryTrackerAction, TrajectoryTrackerGoal, CircleTrackerAction, CircleTrackerGoal, LineTrackerAction, LineTrackerGoal, PolyTrackerAction
 
 from kr_tracker_msgs.srv import Transition
 from std_srvs.srv import Trigger, SetBool
@@ -32,6 +32,10 @@ class KrMavInterface(object):
         '/trackers_manager/trajectory_tracker/TrajectoryTracker', TrajectoryTrackerAction)
     self.circle_tracker_client = actionlib.SimpleActionClient(self.mav_name +
         '/trackers_manager/circle_tracker/CircleTracker', CircleTrackerAction)
+    self.poly_tracker_client = actionlib.SimpleActionClient(self.mav_name +
+                                                              '/trackers_manager/poly_tracker/PolyTracker',
+                                                              PolyTrackerAction)
+
     self.traj_tracker_status = ""
 
   def update_odom(self, msg):

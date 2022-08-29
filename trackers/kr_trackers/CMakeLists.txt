@@ -45,6 +45,7 @@ add_library(
   src/initial_conditions.cpp
   src/circle_tracker_server.cpp
   src/initial_conditions.cpp
+  src/layered_ref_tracker.cpp
   src/line_tracker_distance_server.cpp
   src/line_tracker_min_jerk_server.cpp
   # src/line_tracker_trapezoid.cpp
@@ -57,7 +58,7 @@ add_library(
   src/trajectory_tracker.cpp
   src/traj_gen.cpp
   src/velocity_tracker.cpp)
-target_include_directories(${PROJECT_NAME} PUBLIC include ${catkin_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC include ${catkin_INCLUDE_DIRS} utils)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${catkin_LIBRARIES} Eigen3::Eigen)
 
 install(

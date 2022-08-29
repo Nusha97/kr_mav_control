@@ -2,11 +2,12 @@
 import rospy
 import numpy as np
 import random
+import time
 
 from geometry_msgs.msg import Twist, Pose
 from nav_msgs.msg import Odometry
 from std_srvs.srv import SetBool, Trigger
-from kr_tracker_msgs.msg import TrajectoryTrackerAction, TrajectoryTrackerGoal, CircleTrackerAction, CircleTrackerGoal
+from kr_tracker_msgs.msg import TrajectoryTrackerAction, TrajectoryTrackerGoal, CircleTrackerAction, CircleTrackerGoal, PolyTrackerAction, PolyTrackerGoal
 
 from kr_python_interface.mav_interface import KrMavInterface
 
@@ -24,7 +25,7 @@ def main():
 
   rospy.sleep(1)
 
-  #Send waypoint (open loop, have to sleep until finished)
+  """#Send waypoint (open loop, have to sleep until finished)
   mav_obj.send_wp(4.0, 0.0, 1.0, 0.0)
   rospy.sleep(4)
 
@@ -32,7 +33,7 @@ def main():
   mav_obj.send_wp_block(0.0, 0.0, 1.0, 0.0, 0.5, 0.3, False) #x, y, z, yaw, vel, acc, relative
 
   #Send random twist commands
-  for i in range(20):
+  for i in range(2):
     #get current odometry
     curr_odom = mav_obj.get_odom();
     curr_position = curr_odom.pose.pose.position;
@@ -100,10 +101,57 @@ def main():
     rospy.logwarn("Failed to transition to trajectory tracker (is there an active goal?)")
 
   rospy.logwarn("Waiting for traj to run")
-  mav_obj.traj_tracker_client.wait_for_result()
+  mav_obj.traj_tracker_client.wait_for_result()"""
 
   #Send waypoint blocking
-  mav_obj.send_wp_block(0.0, 0.0, 1.0, 0.0, 1.5, 0.5, False) #x, y, z, yaw, vel, acc, relative
+  #mav_obj.send_wp_block(0.0, 0.0, 1.0, 0.0, 1.5, 0.5, False) #x, y, z, yaw, vel, acc, relative
+
+  # Send multiple waypoints by fitting traj
+  goal = TrajectoryTrackerGoal()
+  wp = Pose()
+  wp.position.x = 0.0
+  wp.position.y = 0.0
+  wp.position.z = 2.0
+  goal.waypoints.append(wp)
+
+  wp1 = Pose()
+  wp1.position.x = 0.0
+  wp1.position.y = 1.0
+  wp1.position.z = 1.5
+  goal.waypoints.append(wp1)
+
+  wp2 = Pose()
+  wp2.position.x = 2.0
+  wp2.position.y = 2.0
+  wp2.position.z = 1.0
+  goal.waypoints.append(wp2)
+
+  wp3 = Pose()
+  wp3.position.x = 3.0
+  wp3.position.y = 0.0
+  wp3.position.z = 0.5
+  goal.waypoints.append(wp3)
+
+
+  goal = PolyTrackerGoal()
+  goal.start_time = rospy.get_rostime()
+  goal.order = 7
+  goal.set_yaw = 1
+  goal.start_yaw = 10
+  goal.final_yaw = 10
+  goal.bound_x = [0., 0.0, 2.0, 3.0]
+  goal.bound_y = [0.0, 1.0, 2.0, 0.0]
+  goal.bound_z = [2.0, 1.5, 1.0, 0.5]
+  goal.duration = [0.5, 0.5, 0.5, 0.5]
+
+
+  mav_obj.poly_tracker_client.send_goal(goal)
+  success = mav_obj.transition_service_call('PolyTracker')
+  if not success:
+    rospy.logwarn("Failed to transition to poly tracker (is there an active goal?)")
+
+  rospy.logwarn("Waiting for traj to run")
+  mav_obj.poly_tracker_client.wait_for_result()
 
   # Land / Motors off
   mav_obj.land()
